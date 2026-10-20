@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>משימות מתמטיקה - שכבה ח'</title>
+    <style>
+        :root {
+            --bg-color: #f4f6f9;
+            --card-bg: #ffffff;
+            --primary: #059669; /* Emerald green accent for 8th grade */
+            --primary-hover: #047857;
+            --text: #1e293b;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .header {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+        }
+
+        .edit-btn {
+            background: transparent;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            opacity: 0.5;
+            transition: opacity 0.2s;
+            padding: 8px;
+        }
+
+        .edit-btn:hover {
+            opacity: 1;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 480px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 1.8rem;
+        }
+
+        .link-card {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--primary);
+            color: white;
+            text-decoration: none;
+            padding: 20px;
+            border-radius: 12px;
+            font-size: 1.3rem;
+            font-weight: 600;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.2s, transform 0.1s;
+            text-align: center;
+        }
+
+        .link-card:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-2px);
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+        }
+
+        .modal h2 {
+            margin-top: 0;
+        }
+
+        .form-group {
+            margin-bottom: 12px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 4px;
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            box-sizing: border-box;
+        }
+
+        .modal-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .btn-save { background-color: var(--primary); color: white; }
+        .btn-cancel { background-color: #e2e8f0; color: #333; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <button class="edit-btn" onclick="openTeacherModal()" title="עריכת קישורים">✏️</button>
+    </div>
+
+    <div class="container">
+        <h1>משימות מתמטיקה - שכבה ח'</h1>
+        <div id="linksContainer" style="display: flex; flex-direction: column; gap: 16px;"></div>
+    </div>
+
+    <!-- Edit Modal -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <h2>עריכת קישורים (כיתה ח')</h2>
+            
+            <div class="form-group">
+                <label>כותרת 1:</label>
+                <input type="text" id="title0">
+                <label style="margin-top:4px;">קישור 1:</label>
+                <input type="text" id="url0" placeholder="https://...">
+            </div>
+            <hr style="border: none; border-top: 1px solid #eee; margin: 15px 0;">
+            <div class="form-group">
+                <label>כותרת 2:</label>
+                <input type="text" id="title1">
+                <label style="margin-top:4px;">קישור 2:</label>
+                <input type="text" id="url1" placeholder="https://...">
+            </div>
+            <hr style="border: none; border-top: 1px solid #eee; margin: 15px 0;">
+            <div class="form-group">
+                <label>כותרת 3:</label>
+                <input type="text" id="title2">
+                <label style="margin-top:4px;">קישור 3:</label>
+                <input type="text" id="url2" placeholder="https://...">
+            </div>
+
+            <div class="modal-buttons">
+                <button class="btn btn-cancel" onclick="closeModal()">ביטול</button>
+                <button class="btn btn-save" onclick="saveLinks()">שמור שינויים</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Set teacher PIN for 8th grade
+        const TEACHER_PIN = "6667";
+
+        const defaultLinks = [
+            { title: "משימה 1", url: "https://example.com" },
+            { title: "משימה 2", url: "" },
+            { title: "משימה 3", url: "" }
+        ];
+
+        // Using 'math_links_8' to prevent collision with 7th grade saved data
+        function getLinks() {
+            const saved = localStorage.getItem('math_links_8');
+            return saved ? JSON.parse(saved) : defaultLinks;
+        }
+
+        function renderLinks() {
+            const links = getLinks();
+            const container = document.getElementById('linksContainer');
+            container.innerHTML = '';
+
+            links.forEach(link => {
+                if (link.url && link.url.trim() !== '') {
+                    const a = document.createElement('a');
+                    a.className = 'link-card';
+                    a.href = link.url;
+                    a.target = '_blank';
+                    a.textContent = link.title || 'משימה';
+                    container.appendChild(a);
+                }
+            });
+        }
+
+        function openTeacherModal() {
+            const pin = prompt("הכנס סיסמת מורה:");
+            if (pin === TEACHER_PIN) {
+                const links = getLinks();
+                for (let i = 0; i < 3; i++) {
+                    document.getElementById(`title${i}`).value = links[i] ? links[i].title : '';
+                    document.getElementById(`url${i}`).value = links[i] ? links[i].url : '';
+                }
+                document.getElementById('editModal').style.display = 'flex';
+            } else if (pin !== null) {
+                alert("סיסמה שגויה!");
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('editModal').style.display = 'none';
+        }
+
+        function saveLinks() {
+            const newLinks = [];
+            for (let i = 0; i < 3; i++) {
+                newLinks.push({
+                    title: document.getElementById(`title${i}`).value,
+                    url: document.getElementById(`url${i}`).value
+                });
+            }
+            localStorage.setItem('math_links_8', JSON.stringify(newLinks));
+            closeModal();
+            renderLinks();
+        }
+
+        // Initial Render
+        renderLinks();
+    </script>
+</body>
+</html>
